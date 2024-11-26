@@ -1,0 +1,32 @@
+name: Run
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  RuniOSTests:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET 9.0.100
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.100'
+
+      - name: Set XCode Version
+        shell: bash
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_16.1.app"
+          echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_16.1.app" >> $GITHUB_ENV
+
+      - name: Build Test App
+        run: dotnet workload install ios && cd fody.test && dotnet publish /v:diag /p:Configuration=Release /p:TargetFramework=net8.0-ios fody.test.csproj
